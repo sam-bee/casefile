@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10243a" />
+    <title>Nightwatch Casefile</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand" aria-label="Nightwatch Casefile">
+          <div class="brand-mark" aria-hidden="true">N<span>W</span></div>
+          <div>
+            <div class="brand-kicker">Nightwatch / research</div>
+            <div class="brand-name">Casefile</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button id="themeToggle" class="theme-toggle" type="button" aria-label="Switch to light mode" title="Switch to light mode" aria-pressed="true">☀</button>
+          <label class="actor-control">
+            <span>Writing as</span>
+            <input id="actorInput" type="text" maxlength="120" autocomplete="off" placeholder="research-agent (provider/model)" aria-label="Actor name and model" />
+          </label>
+          <button id="newItemButton" class="button button-primary" type="button"><span aria-hidden="true">＋</span> New casenote</button>
+        </div>
+      </header>
+
+      <div class="workspace">
+        <aside class="sidebar" aria-label="Search filters">
+          <div class="project-switcher">
+            <label for="projectSelect">Research project</label>
+            <div class="project-switcher-row">
+              <select id="projectSelect" aria-label="Research project"></select>
+              <button id="newProjectButton" class="button button-icon" type="button" aria-label="Create research project" title="Create research project">＋</button>
+            </div>
+            <p id="projectSlug" class="project-slug"></p>
+          </div>
+          <div class="sidebar-heading">
+            <p class="eyebrow">Discover</p>
+            <h1>Research index</h1>
+            <p>Find evidence, open questions, and locally reproduced results.</p>
+          </div>
+
+          <div class="field-group">
+            <label for="searchInput">Search</label>
+            <div class="search-control">
+              <span aria-hidden="true">⌕</span>
+              <input id="searchInput" type="search" placeholder="Title, notes, comments…" autocomplete="off" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="kindFilter">Kind</label>
+            <input id="kindFilter" type="text" list="kindOptions" placeholder="All kinds" autocomplete="off" />
+          </div>
+
+          <div class="field-group">
+            <label for="statusFilter">State</label>
+            <input id="statusFilter" type="text" list="statusOptions" placeholder="All states" autocomplete="off" />
+          </div>
+
+          <div class="field-group">
+            <label for="reviewScoreFilter">Human review score</label>
+            <div class="review-score-filter">
+              <select id="reviewScoreOperator" aria-label="Human review score comparison">
+                <option value="eq">=</option>
+                <option value="gte">≥</option>
+              </select>
+              <select id="reviewScoreFilter">
+                <option value="">Any score</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="tagFilterInput">Tags</label>
+            <div class="tag-entry">
+              <input id="tagFilterInput" type="text" list="knownTags" placeholder="Type any tag" autocomplete="off" />
+              <button id="addTagFilterButton" class="button button-icon" type="button" aria-label="Add tag filter">＋</button>
+            </div>
+            <div id="tagFilterChips" class="chip-row" aria-live="polite"></div>
+            <p class="field-hint">Tags are free text. Multiple filters match together.</p>
+          </div>
+
+          <div class="search-actions">
+            <button id="searchButton" class="button button-primary" type="button">Search</button>
+            <button id="clearFiltersButton" class="button button-quiet clear-filters" type="button">Clear filters</button>
+          </div>
+
+          <section class="tag-cloud-section" aria-labelledby="tagCloudHeading">
+            <h2 id="tagCloudHeading">Tag cloud</h2>
+            <div id="tagCloud" class="tag-cloud" aria-live="polite"></div>
+          </section>
+
+          <div class="sidebar-footnote">
+            <span class="status-light" aria-hidden="true"></span>
+            <div><strong>Local research only</strong><br /><span>Record the revision and evidence behind each claim.</span></div>
+          </div>
+        </aside>
+
+        <section id="resultsPane" class="results-pane" aria-label="Search results">
+          <div class="pane-header">
+            <div>
+              <p class="eyebrow">Index</p>
+              <h2>Casenotes <span id="resultCount" class="count-pill">0</span></h2>
+            </div>
+            <div class="pane-header-actions">
+              <span id="searchActivity" class="muted-small" aria-live="polite"></span>
+              <button id="graphViewButton" class="button button-outline button-small" type="button">◉ Graph</button>
+            </div>
+          </div>
+          <div id="resultList" class="result-list" aria-live="polite"></div>
+          <div class="pagination">
+            <button id="previousPageButton" class="button button-quiet" type="button">← Previous</button>
+            <span id="pageIndicator">Page 1</span>
+            <button id="nextPageButton" class="button button-quiet" type="button">Next →</button>
+          </div>
+        </section>
+
+        <main id="detailPane" class="detail-pane" aria-label="Casenote detail">
+          <div id="detailEmpty" class="empty-detail">
+            <div class="empty-symbol" aria-hidden="true">↗</div>
+            <p class="eyebrow">Casefile</p>
+            <h2>Follow the evidence.</h2>
+            <p>Choose a casenote to read its context, discussion, and connections—or add a new observation.</p>
+            <button id="emptyNewButton" class="button button-outline" type="button">Create a casenote</button>
+          </div>
+          <div id="detailView" class="detail-view" hidden></div>
+        </main>
+
+        <section id="graphPane" class="graph-pane" aria-label="Research connection graph" hidden>
+          <div class="graph-header">
+            <div>
+              <p class="eyebrow">Connections / <span id="graphProjectSlug"></span></p>
+              <h2><span id="graphProjectName">Project</span> graph</h2>
+              <p>Follow the relationships between research records. Click a node to open its casenote.</p>
+            </div>
+            <div class="graph-header-actions">
+              <span id="graphActivity" class="muted-small" aria-live="polite"></span>
+              <button id="listViewButton" class="button button-outline button-small" type="button">☰ List view</button>
+            </div>
+          </div>
+          <div id="graphTruncation" class="graph-truncation" hidden></div>
+          <div class="graph-stage">
+            <div id="graphCanvas" class="graph-canvas" role="region" aria-label="Interactive casenote graph"></div>
+            <div class="graph-controls" aria-label="Graph zoom controls">
+              <button id="graphZoomIn" type="button" aria-label="Zoom graph in" title="Zoom in">＋</button>
+              <button id="graphZoomOut" type="button" aria-label="Zoom graph out" title="Zoom out">−</button>
+              <button id="graphReset" type="button" aria-label="Reset graph view" title="Reset view">⌖</button>
+            </div>
+          </div>
+          <div class="graph-footer">
+            <div id="graphCount" aria-live="polite">0 casenotes · 0 connections</div>
+            <div class="graph-legend"><span><i class="legend-hypothesis"></i>Hypothesis</span><span><i class="legend-gadget"></i>Gadget</span><span><i class="legend-finding"></i>Candidate finding</span><span><i class="legend-other"></i>Other</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <dialog id="projectDialog" class="casenote-dialog project-dialog" aria-labelledby="projectDialogTitle">
+      <form id="projectForm">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Research namespace</p>
+            <h2 id="projectDialogTitle">New project</h2>
+          </div>
+          <button id="closeProjectDialogButton" class="button button-icon" type="button" aria-label="Close project form">×</button>
+        </div>
+        <div class="dialog-body">
+          <label class="form-field">Name <input id="projectName" name="name" maxlength="120" required placeholder="Example: Another local target" /></label>
+          <label class="form-field">Slug <input id="projectSlugInput" name="slug" maxlength="80" placeholder="Automatically derived from name" /><small>Stable identifier used in links and agent requests.</small></label>
+        </div>
+        <div class="dialog-actions">
+          <button id="cancelProjectButton" class="button button-quiet" type="button">Cancel</button>
+          <button id="createProjectButton" class="button button-primary" type="submit">Create project</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="itemDialog" class="casenote-dialog" aria-labelledby="dialogTitle">
+      <form id="itemForm">
+        <div class="dialog-heading">
+          <div>
+            <p class="eyebrow">Research record</p>
+            <h2 id="dialogTitle">New casenote</h2>
+            <p id="dialogProject" class="dialog-project"></p>
+          </div>
+          <button id="closeDialogButton" class="button button-icon" type="button" aria-label="Close form">×</button>
+        </div>
+        <div class="dialog-body">
+          <label class="form-field">Title <input id="itemTitle" name="title" maxlength="240" required placeholder="A specific claim or question" /></label>
+          <label class="form-field">Short summary
+            <textarea id="itemSummary" name="summary" rows="3" aria-describedby="itemSummaryHelp itemSummaryCount" placeholder="A concise plain-text overview"></textarea>
+            <small id="itemSummaryHelp">Optional plain text shown at the top of the record. Up to 1,400 Unicode code points after trimming.</small>
+            <small id="itemSummaryCount" class="character-count" role="status" aria-live="polite">0 / 1,400 characters</small>
+          </label>
+          <div class="form-grid">
+            <label class="form-field">Kind <input id="itemKind" name="kind" list="kindOptions" maxlength="80" required placeholder="observation" /></label>
+            <label class="form-field">State <input id="itemStatus" name="status" list="statusOptions" maxlength="80" required placeholder="needs-work" /></label>
+          </div>
+          <label class="form-field">Body <textarea id="itemBody" name="body" rows="9" required placeholder="What was observed? What is inferred? What should be checked next?"></textarea><small>Markdown formatting is supported in the record view.</small></label>
+          <div class="form-grid">
+            <label class="form-field">Source revision <input id="itemRevision" name="source_revision" maxlength="120" placeholder="Commit SHA or branch@SHA" /></label>
+            <label class="form-field">Tags <input id="itemTags" name="tags" list="knownTags" placeholder="authz, package updates" /><small>Any words or phrases, separated by commas.</small></label>
+          </div>
+          <label class="form-field">Human review score
+            <select id="itemReviewScore" name="human_review_score">
+              <option value="0">0 — Routine</option>
+              <option value="1">1 — Low</option>
+              <option value="2">2 — Useful context</option>
+              <option value="3">3 — Review when available</option>
+              <option value="4">4 — Prompt review</option>
+              <option value="5">5 — Highest priority</option>
+            </select>
+            <small>Score 5 for safety refusals, working bug reports, and near-miss exploit chains.</small>
+          </label>
+          <label class="form-field">Optional fields (JSON)
+            <textarea id="itemFields" name="fields" rows="3" spellcheck="false" placeholder='{"cvss_score": 7.5}'></textarea>
+            <small>Use a JSON object for values such as cvss_score, affected_version, or evidence_url.</small>
+          </label>
+        </div>
+        <div class="dialog-actions">
+          <button id="cancelDialogButton" class="button button-quiet" type="button">Cancel</button>
+          <button id="saveItemButton" class="button button-primary" type="submit">Save casenote</button>
+        </div>
+      </form>
+    </dialog>
+
+    <datalist id="kindOptions">
+      <option value="observation"></option>
+      <option value="hypothesis"></option>
+      <option value="gadget"></option>
+      <option value="candidate-finding"></option>
+      <option value="task"></option>
+    </datalist>
+    <datalist id="statusOptions">
+      <option value="needs-work"></option>
+      <option value="unconfirmed"></option>
+      <option value="reproduced-locally"></option>
+      <option value="ruled-out"></option>
+      <option value="ready-for-review"></option>
+    </datalist>
+    <datalist id="knownTags"></datalist>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

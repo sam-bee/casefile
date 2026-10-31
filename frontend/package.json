@@ -1,0 +1,16 @@
+{
+  "name": "nightwatch-casefile-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "dompurify": "3.4.17",
+    "markdown-it": "15.0.3"
+  },
+  "devDependencies": {
+    "vite": "6.4.5"
+  }
+}

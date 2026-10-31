@@ -1,0 +1,61 @@
+name: nightwatch-casefile
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nightwatch-casefile-app
+    user: "1000:1984"
+    environment:
+      PORT: "8080"
+      STATIC_DIR: /app/public
+      DATABASE_URL: "postgres://casefile:${CASEFILE_DB_PASSWORD:?Run ./scripts/init-env.sh first}@postgres:5432/casefile?sslmode=disable"
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${CASEFILE_PORT:-8090}:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: casefile
+      POSTGRES_USER: casefile
+      POSTGRES_PASSWORD: "${CASEFILE_DB_PASSWORD:?Run ./scripts/init-env.sh first}"
+    volumes:
+      - type: bind
+        source: "${CASEFILE_DATA_DIR:?Run ./scripts/init-env.sh first}/postgres"
+        target: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U casefile -d casefile"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.5
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - type: bind
+        source: "${CASEFILE_DATA_DIR:?Run ./scripts/init-env.sh first}/elasticsearch"
+        target: /usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://127.0.0.1:9200/_cluster/health?wait_for_status=yellow&timeout=5s' > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    mem_limit: 2g
+    restart: unless-stopped
