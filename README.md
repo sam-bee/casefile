@@ -1,6 +1,6 @@
 # Nightwatch casefile
 
-A small, local research casefile for the Nightwatch agents. PostgreSQL is the
+A small research casefile for the Nightwatch agents. PostgreSQL is the
 source of truth for casenotes, comments, tags, and links. Elasticsearch holds a
 rebuildable search index. The Go service exposes a POST-only application API and
 serves a single-page browser interface.
@@ -9,7 +9,14 @@ The casefile stores research for authorized local targets. Running it does not
 authorize testing a target or publishing findings; the human operator handles
 disclosure.
 
-## Run
+## Environments
+
+The containernode k3s deployment is the durable shared Casefile. The Docker
+Compose stack below is a development environment only; its data is disposable.
+It runs the application, PostgreSQL 17, and Elasticsearch 9.5.5, publishing only
+the application on a loopback port.
+
+## Run the development environment
 
 From this directory:
 
@@ -41,7 +48,7 @@ PostgreSQL and Elasticsearch data live in the local directory named by
 chooses `${XDG_STATE_HOME:-$HOME/.local/state}/nightwatch-casefile` by default;
 set `CASEFILE_DATA_DIR` in `.env` to use another local directory. Make sure it
 has room for Elasticsearch. `docker compose down` keeps that data; remove it
-only when you intend to delete the canonical PostgreSQL records. The local
+when you intend to reset the development PostgreSQL records. The local
 `.env` contains a generated database password, is mode 0600, and is ignored
 by Git.
 
