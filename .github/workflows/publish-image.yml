@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+concurrency:
+  group: publish-casefile-image
+  cancel-in-progress: true
+
 permissions:
   contents: read
   packages: write
@@ -26,7 +30,8 @@ jobs:
       - name: Build image
         run: |
           docker build --platform linux/amd64 --provenance=false \
-            --tag "ghcr.io/sam-bee/nightwatch-casefile:$GITHUB_SHA" .
+            --tag "ghcr.io/sam-bee/nightwatch-casefile:$GITHUB_SHA" \
+            --tag "ghcr.io/sam-bee/nightwatch-casefile:latest" .
 
       - name: Sign in to GitHub Container Registry
         env:
@@ -36,4 +41,6 @@ jobs:
             --username "$GITHUB_ACTOR" --password-stdin
 
       - name: Push image
-        run: docker push "ghcr.io/sam-bee/nightwatch-casefile:$GITHUB_SHA"
+        run: |
+          docker push "ghcr.io/sam-bee/nightwatch-casefile:$GITHUB_SHA"
+          docker push "ghcr.io/sam-bee/nightwatch-casefile:latest"
