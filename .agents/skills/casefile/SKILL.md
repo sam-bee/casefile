@@ -42,6 +42,12 @@ Use `--env` to read `CASEFILE_PROJECT` and `CASEFILE_API_URL` from a local
 environment file when integrating with a harness. To start a separate test
 run, choose a new lowercase project slug and run `project ensure`. Existing
 projects and casenotes remain intact.
+Name new Casefile projects for the research subject or question, and give each
+casenote a title that states its actual claim or experiment. Use a model or
+provider name in a project or casenote title only when that model or provider
+is itself the subject of the research; a mixed-agent run must not appear to
+have used one model throughout. Record the actual agent/model mix in actor
+attribution and, when there is an experiment, its manifest instead.
 The CLI injects that project into project-scoped JSON requests when absent.
 It accepts a JSON file or stdin and prints JSON. Every API call uses HTTP POST.
 
