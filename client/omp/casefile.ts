@@ -28,6 +28,17 @@ function actorFor(ctx: any): string {
 	return `${name} (${provider}/${model})`;
 }
 
+function casefileBaseURL(raw: string): string {
+	const url = new URL(raw);
+	const local = url.protocol === "http:" && ["127.0.0.1", "localhost"].includes(url.hostname);
+	const hosted = url.origin === "https://casefile.ocelot-altered.ts.net";
+	if ((!local && !hosted) || url.username || url.password || url.search || url.hash ||
+		url.pathname.replace(/\/$/, "") !== "/api") {
+		throw new Error("Casefile tool requires a loopback HTTP or approved hosted HTTPS /api URL");
+	}
+	return url.href.replace(/\/$/, "");
+}
+
 function configuration() {
 	const values: Record<string, string> = {};
 	for (const line of readFileSync(envFile, "utf8").split(/\r?\n/)) {
@@ -36,12 +47,9 @@ function configuration() {
 	}
 	const project = values.CASEFILE_PROJECT;
 	if (!project) throw new Error("CASEFILE_PROJECT is missing from the local Nightwatch env file");
-	const url = new URL(values.CASEFILE_API_URL || "http://127.0.0.1:8090/api");
-	if (url.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(url.hostname) ||
-		url.username || url.password || url.search || url.hash || url.pathname.replace(/\/$/, "") !== "/api") {
-		throw new Error("Casefile tool requires a loopback HTTP /api URL");
-	}
-	return { project, base: url.href.replace(/\/$/, "") };
+	if (!values.CASEFILE_API_URL) throw new Error("CASEFILE_API_URL is missing from the local Nightwatch env file");
+	const base = casefileBaseURL(values.CASEFILE_API_URL);
+	return { project, base };
 }
 
 export default function (pi: any) {
@@ -75,7 +83,7 @@ export default function (pi: any) {
 			}
 			const response = await fetch(`${base}/${params.operation}`, {
 				method: "POST", headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(payload), signal,
+				body: JSON.stringify(payload), redirect: "error", signal,
 			});
 			const text = await response.text();
 			if (!response.ok) throw new Error(`Casefile ${params.operation}: HTTP ${response.status}: ${text.slice(0, 1000)}`);
