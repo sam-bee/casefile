@@ -95,8 +95,8 @@ export default function (pi: any) {
 		if (ctx.agent?.kind !== "sub" || ctx.agent.name !== "archivist") return;
 		if (event.toolName === "casefile" || event.toolName === "yield") return;
 		const target = typeof event.input?.path === "string" ? event.input.path : "";
-		if (event.toolName === "read" && (target.startsWith("history://") || archivistReadPaths.has(target))) return;
+		if (event.toolName === "read" && (target.startsWith("history://") || /^skill:\/\/[A-Za-z][A-Za-z0-9._-]*$/.test(target) || archivistReadPaths.has(target))) return;
 		if (event.toolName === "write" && /^agent:\/\/[A-Za-z0-9._-]+$/.test(target)) return;
-		return { block: true, reason: "The archivist may use Casefile, read agent history, and message peers only" };
+		return { block: true, reason: "The archivist may use Casefile, read allowed skills and policy documents, read agent history, and message peers only" };
 	});
 }
