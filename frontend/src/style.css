@@ -31,12 +31,8 @@ button:disabled { cursor: default; opacity: .45; }
 }
 .brand { display: flex; align-items: center; gap: 13px; white-space: nowrap; }
 .brand-mark {
-  width: 43px; height: 43px; border: 1.5px solid #e1b34a;
-  color: #f3c96e; border-radius: 10px; display: grid; place-items: center;
-  font-size: 13px; font-weight: 850; letter-spacing: -.08em;
-  transform: rotate(-5deg);
+  width: 38px; height: 50px; flex: none; object-fit: contain;
 }
-.brand-mark span { color: white; }
 .brand-kicker { text-transform: uppercase; letter-spacing: .17em; color: #a8b8c2; font-size: 10px; font-weight: 750; }
 .brand-name { font-family: Georgia, Cambria, serif; font-size: 25px; font-weight: 700; line-height: 1.08; letter-spacing: -.035em; }
 .topbar-actions { display: flex; align-items: center; gap: 15px; }

@@ -1,5 +1,7 @@
 # Nightwatch casefile
 
+<img src="frontend/public/casefile-logo.png" alt="Casefile logo" width="120">
+
 A small research casefile for the Nightwatch agents. PostgreSQL is the
 source of truth for casenotes, comments, tags, and links. Elasticsearch holds a
 rebuildable search index. The Go service exposes a POST-only application API and
